@@ -22,7 +22,7 @@ namespace API.Controllers
             return await _context.Products.ToListAsync();
         }
 
-        [HttpGet("{id}")] // api/products/3
+        [HttpGet("{id}")] // api/products/3  
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
             return await _context.Products.FindAsync(id);
