@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { Avatar, Button, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { Product } from "../../app/models/product";
 // create an interface to be able to give the type Product (we must import it)
 interface Props {
@@ -9,12 +10,17 @@ interface Props {
 export default function Catalog({ products, addProduct }: Props) {
     return (
         <>
-            <ul>
+            <List>
                 {products.map(product => (
-                    <li key={product.id}>{product.name} - {product.price}</li>
+                    <ListItem key={product.id}>
+                        <ListItemAvatar>
+                            <Avatar src={product.pictureUrl}></Avatar>
+                        </ListItemAvatar>
+                        <ListItemText>{product.name} - {product.price}</ListItemText>
+                    </ListItem>
                 ))}
-            </ul>
-            <button onClick={addProduct}>Add product</button>
+            </List>
+            <Button variant='contained' onClick={addProduct}>Add product</Button>
         </>
     )
 }
