@@ -10,7 +10,7 @@ export default function Catalog() {
     const [products, setProducts] = useState<Product[]>([]);
 
     // hooks
-    // Get data from API, using JS
+    // Get data from API, using JS. We installed Axios (Video 43), to use it instead using 'fecht'
     useEffect(() => {
         fetch('http://localhost:5000/api/products').then(response => response.json()).then(data => setProducts(data))
     }, []) // an empty array[] in the 'dependencies' prevent a endless loop
