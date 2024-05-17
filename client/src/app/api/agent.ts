@@ -5,6 +5,7 @@ import { router } from "../router/Routes";
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500)); // Only to do it more real and test the error handle
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
+axios.defaults.withCredentials = true; // to work with the cookie we created in API
 
 // helper method to get the response store data from the body and storing it inside the const responseBody
 const responseBody = (response: AxiosResponse) => response.data;
@@ -61,9 +62,16 @@ const TestErrors = {
     getValidationError: () => requests.get('buggy/validation-error'),
 }
 
+const Basket = {
+    get: () => requests.get('basket'),
+    addItem: (productId: number, quantity = 1) => requests.post(`basket?productId=${productId}&quantity=${quantity}`, {}),
+    removeItem: (productId: number, quantity = 1) => requests.delete(`basket?productId=${productId}&quantity=${quantity}`)
+}
+
 const agent = {
     Catalog,
-    TestErrors
+    TestErrors,
+    Basket
 }
 
 export default agent;

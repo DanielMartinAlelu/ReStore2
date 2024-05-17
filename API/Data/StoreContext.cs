@@ -11,5 +11,6 @@ namespace API.Data
         }
 
         public DbSet<Product> Products { get; set; } // represent a table in our database
+        public DbSet<Basket> Baskets { get; set; } // EF (In the terminal, we migrate the database: 'dotnet ef migrations add BasketEntityAdded')
     }
 }
