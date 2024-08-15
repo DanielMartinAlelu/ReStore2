@@ -5,30 +5,28 @@ import { Product } from "../../app/models/product";
 import agent from "../../app/api/agent";
 import NotFound from "../../app/errors/NotFound";
 import LoadingComponent from "../../app/layouts/LoadingComponent";
-import { useStoreContext } from "../../app/context/StoreContext";
 import { LoadingButton } from "@mui/lab";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
+import { addBasketItemAsync, removeBasketItemAsync } from "../basket/basketSlice";
+import { fetchProductAsync, productSelectors } from "./CatalogSlice";
 
 export default function ProductDetails() {
     // React router/hooks/use-params
-    const { basket, setBasket, removeItem } = useStoreContext();
-    const { id } = useParams<{ id: string }>();
-    // to store the products from the api:
-    const [product, setProduct] = useState<Product | null>(null);  // if we don't have a product we return null, because first time we load the products we're not going to have a product
-    const [loading, setLoading] = useState(true);
+    const { basket, status } = useAppSelector(state => state.basket);
+    const dispatch = useAppDispatch();
+    const {id} = useParams<{ id: string }>();
+    const product = useAppSelector(state => productSelectors.selectById(state, id));
+    const { status: productStatus } = useAppSelector(state => state.catalog);
     const [quantity, setQuantity] = useState(0);
-    const [submitting, setSubmitting] = useState(false);
     const item = basket?.items.find(i => i.productId === product?.id)
 
     // the comas: `` used to be able to introduce parameters too in typeScript
     useEffect(() => {
         if (item)
             setQuantity(item.quantity);
-        // id && agent... (it was like this before, with the id)
-        agent.Catalog.details(parseInt(id))
-            .then(response => setProduct(response))
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false))
-    }, [id, item])
+        if (!product && id)
+            dispatch(fetchProductAsync(parseInt(id)));
+    }, [id, item, dispatch, product])
 
     // OnChange event to add/reduce quantity
     function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -41,23 +39,16 @@ export default function ProductDetails() {
         if (!product)
             return;
 
-        setSubmitting(true);
         if (!item || quantity > item.quantity) {
             const updatedQuantity = item ? quantity - item.quantity : quantity;
-            agent.Basket.addItem(product.id!, updatedQuantity)
-                .then(basket => setBasket(basket))
-                .catch(error => console.log(error))
-                .finally(() => setSubmitting(false))
+            dispatch(addBasketItemAsync({ productId: product?.id, quantity: updatedQuantity }))
         } else {
             const updatedQuantity = item.quantity - quantity;
-            agent.Basket.removeItem(product.id!, updatedQuantity)
-                .then(() => removeItem(product.id!, updatedQuantity))
-                .catch(error => console.log(error))
-                .finally(() => setSubmitting(false));
+            dispatch(removeBasketItemAsync({ productId: product?.id, quantity: updatedQuantity }))
         }
     }
 
-    if (loading)
+    if (productStatus.includes('pending'))
         return <LoadingComponent message='Loading product...' />
 
     if (!product)
@@ -113,7 +104,7 @@ export default function ProductDetails() {
                     <Grid item xs={6}>
                         <LoadingButton
                             disabled={item?.quantity === quantity || !item && quantity === 0}
-                            loading={submitting}
+                            loading={status.includes('pending')}
                             onClick={handleUpdateCart}
                             sx={{ height: '55px' }}
                             color='primary'
